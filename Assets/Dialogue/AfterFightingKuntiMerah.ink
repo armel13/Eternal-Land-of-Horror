@@ -1,0 +1,3 @@
+﻿Akhirnya kunti merah bisa kalah juga. Sekarang Pulau Eternal Land sudah bebas dari kutukan. #speaker:Aya #portrait:ayaSprite6 #layout:left #audio:Dialogue
+Terimakasih banyak Aya, engkau telah menyelamatkan pulau ini. Jasamu pasti akan dikenang oleh pulau ini. #speaker:Kunti Putih #portrait:kuntiSprite2 #layout:right #audio:Dialogue
+Senang bisa melihat pulau Eternal Land ini hidup Kembali! #speaker:Aya #portrait:ayaSprite6 #layout:left #audio:Dialogue

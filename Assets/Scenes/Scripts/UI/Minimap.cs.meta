@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: b451d1781cec0e54d93d51f7c309026e
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - minimapTexture: {instanceID: 0}
+  - minimapDisplay: {instanceID: 0}
+  - player: {fileID: 2563314732267516037, guid: dd3d88e3d331b8d419dbf7280db0b3a2,
+      type: 3}
+  - playerMarker: {instanceID: 0}
+  - enemyMarkerPrefab: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

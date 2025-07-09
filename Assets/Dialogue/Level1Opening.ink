@@ -1,0 +1,11 @@
+﻿Kenapa pulau ini mengerikan, dan tidak ada satupun manusia? Seharusnya ramai disini. #speaker:Aya #portrait:AyaScared #layout:left #audio:Dialogue
+Aya... Kau harus pergi dari sini. Tempat ini sudah berbahaya. #speaker:Kunti Putih #portrait:kuntiOpening #layout:right #audio:Dialogue
+Siapa itu? Tunjukkan dirimu! #speaker:Aya #portrait:ayaOpening #layout:left #audio:Dialogue
+Kenalin aku kunti putih, kutukan dari kakak ku si kunti merah yang telah merusak pulau ini, dia ingin berkuasa di pulau ini. Hanya aku yang tidak terpengaruh oleh kutukan ini. #speaker:Kunti Putih #portrait:kuntiSprite2 #layout:right #audio:Dialogue
+Lalu kenapa aku tidak terpengaruh? #speaker:Aya #portrait:AyaSideViewMouthOpen #layout:left #audio:Dialogue
+Kalau sampai kunti merah menemukanmu maka dia akan mengubahmu menjadi siluman. Aku mohon tolong selamatkan pulau ini dari kutukan kakakku, hanya engkaulah satu-satunya harapanku. #speaker:Kunti Putih #portrait:kuntiSprite2 #layout:right #audio:Dialogue
+Kenapa engkau ingin pulau ini diselamatkan? Dan apa yang harus aku lakukan? #speaker:Aya #portrait:ayaFirstDialogue #layout:left #audio:Dialogue
+Aku benci sifat kakak ku yang ingin berkuasa dan merugikan banyak manusia. Engkau harus menemukan Silver Key, bronze key, dan Boss key. Kunci-kunci itu tersebar pada rumah-rumah di level 2. Itu satu-satunya cara untuk menemukan dan mengalahkan Kunti Merah. #speaker:Kunti Putih #portrait:kuntiSprite2 #layout:right #audio:Dialogue
+Aku tidak punya pilihan. Aku harus menemukan kunci-kunci itu. #speaker:Aya #portrait:ayaSprite10 #layout:left #audio:Dialogue
+Sebelum engkau ke level 2 ,engkau harus menyelesaikan level 1 dahulu, setiap level memiliki misi yang harus dikerjakan jadi pastikan menyelesaikan semua misi, sebelum misi terakhir mengalahkan kunti merah. Aku harap kamu bisa menyelesaikannya. #speaker:Kunti Putih #portrait:kuntiSprite2 #layout:right #audio:Dialogue
+Baiklah, akan aku lakukan yang terbaik untuk pulau Eternal Land ini. #speaker:Aya #portrait:aya2 #layout:left #audio:Dialogue

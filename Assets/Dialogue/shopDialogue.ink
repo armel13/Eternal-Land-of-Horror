@@ -1,0 +1,3 @@
+Selamat datang di lapak tuyul, mau beli apa nona manis! #speaker:Tuyul #portrait:tuyulSprite1 #layout:right #audio:Dialogue
+Aku mau beli beberapa item yang dibutuhkan. Apa pulau ini benar- benar di kutuk oleh kunti merah? #speaker:Aya #portrait:ayaSprite6 #layout:left #audio:Dialogue
+Benar, nona manis. Berhati-hatilah saat menghadapinya, dan lebih baik engkau membeli beberapa item seperti botol ajaib karena ini akan berguna saat engkau menghadapi kunti merah. #speaker:Tuyul #portrait:tuyulSprite0 #layout:right #audio:Dialogue

@@ -1,0 +1,401 @@
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using Ink.Runtime;
+using UnityEngine.EventSystems;
+
+public class DialogueManager : MonoBehaviour
+{
+    [Header("Params")]
+    [SerializeField] private float typingSpeed = 0.04f;
+
+    [Header("Load Globals JSON")]
+    [SerializeField] private TextAsset loadGlobalJSON;
+
+    [Header("Dialogue UI")]
+    [SerializeField] private GameObject dialoguePanel;
+    [SerializeField] private GameObject continueIcon;
+    [SerializeField] private TextMeshProUGUI dialogueText;
+    [SerializeField] private TextMeshProUGUI displayNameText;
+    [SerializeField] private Animator portraitAnimator;
+    private Animator layoutAnimator;
+
+    [Header("Choice UI")]
+    [SerializeField] private GameObject[] choices;
+    private TextMeshProUGUI[] choicesText;
+
+    [Header("Audio")]
+    [SerializeField] private DialogueAudioInfoSO defaultAudioInfo;
+    [SerializeField] private DialogueAudioInfoSO[] audioInfos;
+    [SerializeField] private bool makePredictable;
+    private DialogueAudioInfoSO currentAudioInfo;
+    private Dictionary<string, DialogueAudioInfoSO> audioInfoDictionary;
+    private AudioSource audioSource;
+
+    private Story currentStory;
+    public bool dialogueIsPlaying { get; private set; }
+    private bool canContinueToNextLine = false;
+    private Coroutine displayLineCoroutine;
+
+    private static DialogueManager instance;
+
+    private const string SPEAKER_TAG = "speaker";
+    private const string PORTRAIT_TAG = "portrait";
+    private const string LAYOUT_TAG = "layout";
+    private const string AUDIO_TAG = "audio";
+
+    private DialogueVariables dialogueVariables;
+
+    private void Awake()
+    {
+        if (instance != null)
+        {
+            Debug.LogWarning("Found more than one Dialogue Manager in the scene");
+            Destroy(gameObject);
+            return;
+        }
+        instance = this;
+
+        dialogueVariables = new DialogueVariables(loadGlobalJSON);
+
+        audioSource = this.gameObject.AddComponent<AudioSource>();
+
+        currentAudioInfo = defaultAudioInfo;
+    }
+
+    public static DialogueManager GetInstance()
+    {
+        return instance;
+    }
+
+    private void Start()
+    {
+        dialogueIsPlaying = false;
+
+        // Check if dialoguePanel and continueIcon are assigned in the inspector
+        if (dialoguePanel == null || continueIcon == null)
+        {
+            Debug.LogError("Dialogue Panel or Continue Icon is not assigned in the Inspector!");
+            return;  // Prevents further execution if dialoguePanel or continueIcon is missing
+        }
+
+        dialoguePanel.SetActive(false);
+
+        layoutAnimator = dialoguePanel.GetComponent<Animator>();
+        if (layoutAnimator == null)
+        {
+            Debug.LogWarning("Layout Animator on dialoguePanel is not found!");
+        }
+
+        choicesText = new TextMeshProUGUI[choices.Length];
+        int index = 0;
+        foreach (GameObject choice in choices)
+        {
+            if (choice != null)
+            {
+                choicesText[index] = choice.GetComponentInChildren<TextMeshProUGUI>();
+            }
+            else
+            {
+                Debug.LogWarning($"Choice at index {index} is not assigned.");
+            }
+            index++;
+        }
+
+        InitializeAudioInfoDictionary();
+    }
+
+    private void InitializeAudioInfoDictionary()
+    {
+        audioInfoDictionary = new Dictionary<string, DialogueAudioInfoSO>();
+        audioInfoDictionary.Add(defaultAudioInfo.id, defaultAudioInfo);
+        foreach (DialogueAudioInfoSO audioInfo in audioInfos)
+        {
+            audioInfoDictionary.Add(audioInfo.id, audioInfo);
+        }
+    }
+
+    private void SetCurrentAudioInfo(string id)
+    {
+        DialogueAudioInfoSO audioInfo = null;
+        audioInfoDictionary.TryGetValue(id, out audioInfo);
+        if (audioInfo != null)
+        {
+            this.currentAudioInfo = audioInfo;
+        }
+        else
+        {
+            Debug.LogWarning("Failed to find audio info for id: " + id);
+        }
+    }
+
+    private void Update()
+    {
+        if (!dialogueIsPlaying)
+        {
+            return;
+        }
+
+        if (canContinueToNextLine && currentStory.currentChoices.Count == 0 && InputManager.GetInstance().GetSubmitPressed())
+        {
+            ContinueStory();
+        }
+    }
+
+    public void EnterDialogueMode(TextAsset inkJSON)
+    {
+        currentStory = new Story(inkJSON.text);
+        dialogueIsPlaying = true;
+
+        if (dialoguePanel == null || continueIcon == null)
+        {
+            Debug.LogError("Dialogue Panel or Continue Icon is missing in EnterDialogueMode!");
+            return;
+        }
+
+        Debug.Log("Enter Dialogue Mode");
+        dialoguePanel.SetActive(true);
+
+        dialogueVariables.StartListening(currentStory);
+
+        displayNameText.text = "???";
+
+        if (portraitAnimator != null)
+            portraitAnimator.Play("default");
+
+        if (layoutAnimator != null)
+            layoutAnimator.Play("right");
+
+        ContinueStory();
+    }
+
+    private IEnumerator ExitDialogueMode()
+    {
+        yield return new WaitForSeconds(0.2f);
+
+        dialogueVariables.StopListening(currentStory);
+
+        dialogueIsPlaying = false;
+        dialoguePanel.SetActive(false);
+        dialogueText.text = "";
+
+        SetCurrentAudioInfo(defaultAudioInfo.id);
+    }
+
+    private void ContinueStory()
+    {
+        if (currentStory.canContinue)
+        {
+            if (displayLineCoroutine != null)
+            {
+                StopCoroutine(displayLineCoroutine);
+            }
+
+            string nextLine = currentStory.Continue();
+            HandleTags(currentStory.currentTags);
+            displayLineCoroutine = StartCoroutine(DisplayLine(nextLine));
+
+        }
+        else
+        {
+            StartCoroutine(ExitDialogueMode());
+        }
+    }
+
+    private IEnumerator DisplayLine(string line)
+    {
+        dialogueText.text = line;
+        //dialogueText.maxVisibleCharacters = 0;
+
+        //continueIcon.SetActive(false);
+        //HideChoice();
+
+        //canContinueToNextLine = false;
+
+        //bool isAddingRichTextTag = false;
+
+        //foreach (char letter in line.ToCharArray())
+        //{
+        //    if (InputManager.GetInstance().GetSubmitPressed())
+        //    {
+        //        dialogueText.maxVisibleCharacters = line.Length;
+        //        break;
+        //    }
+
+        //    if (letter == '<' || isAddingRichTextTag)
+        //    {
+        //        isAddingRichTextTag = true;
+        //        if (letter == '>')
+        //        {
+        //            isAddingRichTextTag = false;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        PlayDialogueSound(dialogueText.maxVisibleCharacters, dialogueText.text[dialogueText.maxVisibleCharacters]);
+        //        dialogueText.maxVisibleCharacters++;
+        //        yield return new WaitForSeconds(typingSpeed);
+        //    }
+        //}
+        continueIcon.SetActive(true);
+        DisplayChoices();
+        PlayNewDialogueSFXOnce();
+        yield return new WaitForSeconds(0.1F);
+        canContinueToNextLine = true;
+    }
+
+    public void PlayNewDialogueSFXOnce()
+    {
+        SoundsManager.GetInstance().PlayClip(SoundsManager.Sound.Dialogue);
+    }
+
+    private void PlayDialogueSound(int currentDisplayCharacterCount, char currentCharacter)
+    {
+        AudioClip[] dialogueTypingSoundClips = currentAudioInfo.dialogueTypingSoundClips;
+        int frequencyLevel = currentAudioInfo.frequencyLevel;
+        float minPitch = currentAudioInfo.minPitch;
+        float maxPitch = currentAudioInfo.maxPitch;
+        bool stopAudioSource = currentAudioInfo.stopAudioSource;
+
+        if (currentDisplayCharacterCount % frequencyLevel == 0)
+        {
+            if (stopAudioSource)
+            {
+                audioSource.Stop();
+            }
+            AudioClip soundClip = null;
+            if (makePredictable)
+            {
+                int hashCode = currentCharacter.GetHashCode();
+                int predictableIndex = hashCode % dialogueTypingSoundClips.Length;
+                soundClip = dialogueTypingSoundClips[predictableIndex];
+
+                int minPitchInt = (int)(minPitch * 100);
+                int maxPitchInt = (int)(maxPitch * 100);
+                int pitchRangeInt = maxPitchInt - minPitchInt;
+
+                if (pitchRangeInt != 0)
+                {
+                    int predictablePitchInt = (hashCode % pitchRangeInt) + minPitchInt;
+                    float predictablePitch = predictablePitchInt / 100f;
+                    audioSource.pitch = predictablePitch;
+                }
+            }
+            else
+            {
+                int randomIndex = Random.Range(0, dialogueTypingSoundClips.Length);
+                soundClip = dialogueTypingSoundClips[randomIndex];
+                audioSource.pitch = Random.Range(minPitch, maxPitch);
+            }
+
+            if (SaveManager.GetInstance() != null)
+            {
+                audioSource.PlayOneShot(soundClip, SaveManager.GetInstance().SavedVolumeValue);
+            }
+            else
+            {
+                audioSource.PlayOneShot(soundClip);
+            }
+
+        }
+    }
+
+    private void HideChoice()
+    {
+        foreach (GameObject choiceButton in choices)
+        {
+            choiceButton.SetActive(false);
+        }
+    }
+
+    private void HandleTags(List<string> currentTags)
+    {
+        foreach (string tag in currentTags)
+        {
+            string[] splitTag = tag.Split(':');
+            if (splitTag.Length != 2)
+            {
+                Debug.LogError("tag could not be appropriately parsed: " + tag);
+            }
+            string tagKey = splitTag[0].Trim();
+            string tagValue = splitTag[1].Trim();
+
+            switch (tagKey)
+            {
+                case SPEAKER_TAG:
+                    displayNameText.text = tagValue;
+                    break;
+                case PORTRAIT_TAG:
+                    portraitAnimator.Play(tagValue);
+                    break;
+                case LAYOUT_TAG:
+                    layoutAnimator.Play(tagValue);
+                    break;
+                case AUDIO_TAG:
+                    SetCurrentAudioInfo(tagValue);
+                    break;
+                default:
+                    Debug.LogWarning("Tag came in but is not currently being handled: " + tag);
+                    break;
+            }
+        }
+    }
+
+    private void DisplayChoices()
+    {
+        List<Choice> currentChoices = currentStory.currentChoices;
+
+        if (currentChoices.Count > choices.Length)
+        {
+            Debug.LogError("More choices were given than the UI can support. Number of choices given: " + currentChoices.Count);
+        }
+
+        int index = 0;
+        foreach (Choice choice in currentChoices)
+        {
+            choices[index].SetActive(true);
+            choicesText[index].text = choice.text;
+            index++;
+        }
+
+        for (int i = index; i < choices.Length; i++)
+        {
+            choices[i].SetActive(false);
+        }
+
+        StartCoroutine(SelectFirstChoice());
+    }
+
+    private IEnumerator SelectFirstChoice()
+    {
+        EventSystem.current.SetSelectedGameObject(null);
+        yield return new WaitForEndOfFrame();
+        EventSystem.current.SetSelectedGameObject(choices[0].gameObject);
+    }
+
+    public void MakeChoice(int choiceIndex)
+    {
+        if (canContinueToNextLine)
+        {
+            currentStory.ChooseChoiceIndex(choiceIndex);
+            ContinueStory();
+        }
+    }
+
+    public Ink.Runtime.Object GetVariableState(string variableName)
+    {
+        Ink.Runtime.Object variableValue = null;
+        dialogueVariables.variables.TryGetValue(variableName, out variableValue);
+        if (variableValue == null)
+        {
+            Debug.LogWarning("Ink Variable was found to be null: " + variableName);
+        }
+        return variableValue;
+    }
+
+    private void OnApplicationQuit()
+    {
+        dialogueVariables.SaveVariables();
+    }
+}

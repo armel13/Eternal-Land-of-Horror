@@ -1,0 +1,2 @@
+Selamat kamu telah melewati level 1, sekarang kamu berada di level 2, berhati-hatilah di level 2 banyak siluman, engkau harus selalu siaga, mereka bisa kapan saja menyerangmu. #speaker:Kunti Putih #portrait:kuntiSprite2 #layout:right #audio:Dialogue
+Oke, aku mengerti. #speaker:Aya #portrait:aya2 #layout:left #audio:Dialogue

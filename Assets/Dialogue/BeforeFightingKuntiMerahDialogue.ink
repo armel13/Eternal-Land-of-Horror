@@ -1,0 +1,2 @@
+﻿Akhirnya aku menemukanmu, Kunti merah, saatnya aku mengakhiri kutukan jahatmu. #speaker:Aya #portrait:AyaSurprisedMouthOpen #layout:left #audio:Dialogue
+Engkau pikir akan semudah itu mengalahkanku, engkau akan aku ubah menjadi siluman setelah aku mengalahkanmu! #speaker:Kunti Merah #portrait:kuntiMerah0 #layout:right #audio:Dialogue
